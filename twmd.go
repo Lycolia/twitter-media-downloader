@@ -36,10 +36,11 @@ var (
 	size    = "orig"
 )
 
-func download(wg *sync.WaitGroup, url string, filetype string, output string, dwn_type string) {
+func download(wg *sync.WaitGroup, url string, tweet_id string, filetype string, output string, dwn_type string) {
 	defer wg.Done()
 	segments := strings.Split(url, "/")
-	name := segments[len(segments)-1]
+	twfileid := segments[len(segments)-1]
+	name := tweet_id + "_" + twfileid
 	re := regexp.MustCompile(`name=`)
 	if re.MatchString(name) {
 		segments := strings.Split(name, "?")
@@ -114,7 +115,7 @@ func videoUser(wait *sync.WaitGroup, tweet *twitterscraper.TweetResult, output s
 				if rt || onlyrtw {
 					v := vidUrl(j)
 					wg.Add(1)
-					go download(&wg, v, "video", output, "user")
+					go download(&wg, v, tweet.ID, "video", output, "user")
 				} else {
 					continue
 				}
@@ -123,7 +124,7 @@ func videoUser(wait *sync.WaitGroup, tweet *twitterscraper.TweetResult, output s
 			}
 			v := vidUrl(j)
 			wg.Add(1)
-			go download(&wg, v, "video", output, "user")
+			go download(&wg, v, tweet.ID, "video", output, "user")
 		}
 		wg.Wait()
 	}
@@ -148,7 +149,7 @@ func photoUser(wait *sync.WaitGroup, tweet *twitterscraper.TweetResult, output s
 					url = i.URL
 				}
 				wg.Add(1)
-				go download(&wg, url, "img", output, "user")
+				go download(&wg, url, tweet.ID, "img", output, "user")
 			}
 		}
 		wg.Wait()
@@ -163,10 +164,10 @@ func videoSingle(tweet *twitterscraper.Tweet, output string) {
 			v := vidUrl(j)
 			if usr != "" {
 				wg.Add(1)
-				go download(&wg, v, "rtvideo", output, "user")
+				go download(&wg, v, tweet.ID, "rtvideo", output, "user")
 			} else {
 				wg.Add(1)
-				go download(&wg, v, "tweet", output, "tweet")
+				go download(&wg, v, tweet.ID, "tweet", output, "tweet")
 			}
 		}
 		wg.Wait()
@@ -187,10 +188,10 @@ func photoSingle(tweet *twitterscraper.Tweet, output string) {
 				}
 				if usr != "" {
 					wg.Add(1)
-					go download(&wg, url, "rtimg", output, "user")
+					go download(&wg, url, tweet.ID, "rtimg", output, "user")
 				} else {
 					wg.Add(1)
-					go download(&wg, url, "tweet", output, "tweet")
+					go download(&wg, url, tweet.ID, "tweet", output, "tweet")
 				}
 			}
 		}
